@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inicio - Biblioteca Digital{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 py-8 px-4">
+    <div class="max-w-7xl mx-auto">
+        <!-- Hero Section -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-6xl font-display font-bold text-gray-800 dark:text-white mb-4">
+                Bienvenido a 
+                <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    BibliotecaDigital
+                </span>
+            </h1>
+            <p class="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
+                Descubre, explora y gestiona tu coleccion literaria en una plataforma moderna y elegante.
+            </p>
+            
+            {% if not user.is_authenticated %}
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{% url 'register' %}" 
+                   class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition duration-200">
+                    Comenzar Ahora
+                </a>
+                <a href="{% url 'libro_list' %}" 
+                   class="border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-8 py-4 rounded-lg font-semibold text-lg transition duration-200">
+                    Explorar Catalogo
+                </a>
+            </div>
+            {% else %}
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{% url 'libro_list' %}" 
+                   class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition duration-200">
+                    Ver Catalogo Completo
+                </a>
+                <a href="{% url 'importar_libros' %}" 
+                   class="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition duration-200">
+                    Importar Nuevos Libros
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Estadisticas -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900/30 p-6 text-center">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-book text-blue-600 text-xl"></i>
+                </div>
+                <div x-data="{ count: 0, target: {{ total_libros }} }" x-init="() => { const interval = setInterval(() => { if (count < target) count++; else clearInterval(interval) }, 50) }"><h3 class="text-2xl font-serif font-semibold text-gray-800 dark:text-white mb-2" x-text="count"></h3></div>
+                <p class="text-gray-600 dark:text-gray-400">Libros en Catalogo</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900/30 p-6 text-center">
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                </div>
+                <div x-data="{ count: 0, target: {{ total_disponibles }} }" x-init="() => { const interval = setInterval(() => { if (count < target) count++; else clearInterval(interval) }, 50) }"><h3 class="text-2xl font-serif font-semibold text-gray-800 dark:text-white mb-2" x-text="count"></h3></div>
+                <p class="text-gray-600 dark:text-gray-400">Libros Disponibles</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900/30 p-6 text-center">
+                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-users text-purple-600 text-xl"></i>
+                </div>
+                <h3 class="text-2xl font-serif font-semibold text-gray-800 dark:text-white mb-2">
+                    {% if user.is_authenticated %}1{% else %}0{% endif %}
+                </h3>
+                <p class="text-gray-600 dark:text-gray-400">Usuarios Activos</p>
+            </div>
+        </div>
+
+        <!-- Libros Destacados -->
+        <div class="mb-12">
+            <h2 class="text-3xl font-display font-bold text-gray-800 dark:text-white mb-8 text-center">Libros Destacados</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for libro in libros_destacados %}
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900/30 overflow-hidden hover:shadow-xl transition duration-300 book-card">
+                    <div class="h-48 bg-gray-200 flex items-center justify-center overflow-hidden">
+                        {% if libro.portada %}
+                            <img src="{{ libro.portada.url }}" alt="{{ libro.titulo }}" class="w-full h-full object-cover">
+                        {% else %}
+                            <div class="text-gray-400 text-center p-4">
+                                <i class="fas fa-book text-4xl mb-2"></i>
+                                <p class="text-sm">Sin portada</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-semibold text-gray-800 dark:text-white text-lg mb-2 line-clamp-2">{{ libro.titulo }}</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm mb-3">
+                            {% for autor in libro.autores.all %}
+                                {{ autor.nombre }}{% if not forloop.last %}, {% endif %}
+                            {% empty %}
+                                Autor desconocido
+                            {% endfor %}
+                        </p>
+                        <div class="flex justify-between items-center">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                {{ libro.estado }}
+                            </span>
+                            <a href="{% url 'libro_detail' libro.id %}" 
+                               class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium">
+                                Ver detalles
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-span-full text-center py-12">
+                    <i class="fas fa-book-open text-6xl text-gray-300 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">No hay libros destacados</h3>
+                    <p class="text-gray-500">Importa algunos libros para comenzar</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Caracteristicas -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900/30 p-8 mb-12">
+            <h2 class="text-3xl font-display font-bold text-gray-800 dark:text-white mb-8 text-center">Caracteristicas Principales</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="text-center p-6">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-download text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">Importacion Automatica</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Importa libros automaticamente desde Google Books API con portadas e informacion completa.</p>
+                </div>
+                <div class="text-center p-6">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-mobile-alt text-green-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">Diseno Responsive</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Funciona perfectamente en todos los dispositivos: desktop, tablet y movil.</p>
+                </div>
+                <div class="text-center p-6">
+                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-user-shield text-purple-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">Sistema Seguro</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Autenticacion segura y funciones exclusivas para usuarios registrados.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Llamada a la accion -->
+        {% if not user.is_authenticated %}
+        <div class="text-center bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-700 dark:to-purple-700 rounded-2xl p-8 text-white">
+            <h2 class="text-3xl font-bold mb-4">¿Listo para comenzar?</h2>
+            <p class="text-xl mb-6 opacity-90">Unete a nuestra comunidad de lectores y descubre una nueva forma de gestionar tu biblioteca.</p>
+            <a href="{% url 'register' %}" 
+               class="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold text-lg transition duration-200 inline-block">
+                Crear Cuenta Gratis
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

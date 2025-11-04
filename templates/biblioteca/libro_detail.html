@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ libro.titulo }} - Biblioteca Digital{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="md:flex">
+            <!-- Portada del libro -->
+            <div class="md:w-1/3 p-8 flex items-center justify-center bg-gray-50">
+                {% if libro.portada %}
+                    <img src="{{ libro.portada.url }}" alt="{{ libro.titulo }}" 
+                         class="w-64 h-80 object-cover rounded-lg shadow-xl hover:scale-105 transition duration-300">
+                {% else %}
+                    <div class="text-center text-gray-400">
+                        <i class="fas fa-book text-8xl mb-4"></i>
+                        <p class="text-lg">Sin portada disponible</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Información del libro -->
+            <div class="md:w-2/3 p-8">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h1 class="text-4xl font-bold text-gray-900 mb-2">{{ libro.titulo }}</h1>
+                        <p class="text-xl text-gray-600">
+                            <i class="fas fa-user-edit mr-2"></i>
+                            {% for autor in libro.autores.all %}
+                            {{ autor.nombre }}{% if not forloop.last %}, {% endif %}
+                            {% empty %}
+                            Autor desconocido
+                            {% endfor %}
+                        </p>
+                    </div>
+                    <span class="px-4 py-2 rounded-full text-sm font-medium
+                                {% if libro.estado == 'Disponible' %}bg-green-100 text-green-800
+                                {% elif libro.estado == 'Prestado' %}bg-red-100 text-red-800
+                                {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                        {{ libro.estado }}
+                    </span>
+                </div>
+
+                <!-- Información básica -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <h3 class="font-semibold text-gray-900 mb-4 text-lg">Información del Libro</h3>
+                        <dl class="space-y-3">{%if libro.ISBN%}<dt class="text-sm font-medium text-gray-500">ISBN</dt><dd class="text-sm text-gray-900 font-mono mb-3">{{libro.ISBN}}</dd>{%endif%}<dt class="text-sm font-medium text-gray-500">Stock disponible</dt><dd class="text-sm text-gray-900 mb-3">{{libro.stock}} unidad(es)</dd><dt class="text-sm font-medium text-gray-500">Fecha de ingreso</dt><dd class="text-sm text-gray-900">{{libro.fecha_creacion|date:"d M Y"}}</dd></dl>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-semibold text-gray-900 mb-4 text-lg">Categorías</h3>
+                        <div class="flex flex-wrap gap-2">
+                            {% for categoria in libro.categorias.all %}
+                            <span class="px-3 py-2 text-sm rounded-full text-white font-medium bg-gray-500">
+                                {{ categoria.nombre }}
+                            </span>
+                            {% empty %}
+                            <span class="text-gray-500">Sin categorías</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Descripción -->
+                {% if libro.descripcion %}
+                <div class="mb-8">
+                    <h3 class="font-semibold text-gray-900 mb-3 text-lg">Descripción</h3>
+                    <p class="text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg">{{ libro.descripcion }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Acciones -->
+                <div class="flex space-x-4 pt-6 border-t border-gray-200">
+                    {% if libro.estado == 'Disponible' %}
+                    <a href="{% url 'reservar_libro' libro.id %}"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors flex items-center">
+                        <i class="fas fa-bookmark mr-2"></i>
+                        Reservar Libro
+                    </a>
+                    {% else %}
+                    <a disabled
+                            class="bg-gray-400 text-white px-8 py-3 rounded-lg font-medium flex items-center cursor-not-allowed">
+                        <i class="fas fa-clock mr-2"></i>
+                        No Disponible
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'libro_list' %}" 
+                       class="border border-gray-300 hover:bg-gray-50 text-gray-700 px-8 py-3 rounded-lg font-medium transition-colors flex items-center">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Volver al Catálogo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
