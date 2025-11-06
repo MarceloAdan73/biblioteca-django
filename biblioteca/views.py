@@ -34,8 +34,8 @@ def libro_list(request):
     query = request.GET.get('q')
     if query:
         libros = libros.filter(titulo__icontains=query)
-    
-    context = {
+@login_required
+@login_required
         'libros': libros,
         'categorias': categorias,
         'user': request.user,
@@ -93,7 +93,7 @@ def importar_libros(request):
                 
                 if libros_importados > 0:
                     messages.success(request, f'✅ Se importaron {libros_importados} libros correctamente')
-                    return redirect(f"/importar-libros/?q={query}&max_results={max_results}")
+                    return redirect(f"/importar-libros/?q={query or ""}&max_results={max_results or 10}")
                 else:
                     messages.info(request, 'No se pudieron importar nuevos libros (posiblemente ya existen)')
             
