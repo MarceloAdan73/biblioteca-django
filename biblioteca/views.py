@@ -25,6 +25,16 @@ def libro_list(request):
     libros = Libro.objects.all()
     categorias = Categoria.objects.all()
     
+    # Filtrar por categoría si se proporciona
+    categoria_id = request.GET.get('categoria')
+    if categoria_id:
+        libros = libros.filter(categorias__id=categoria_id)
+    
+    # Buscar por query si se proporciona
+    query = request.GET.get('q')
+    if query:
+        libros = libros.filter(titulo__icontains=query)
+    
     context = {
         'libros': libros,
         'categorias': categorias,
@@ -57,34 +67,45 @@ def custom_logout(request):
 
 @login_required
 def importar_libros(request):
-    if request.method == 'POST':
-        query = request.POST.get('query', '').strip()
-        max_results = int(request.POST.get('max_results', 5))
-        
-        if not query:
-            messages.error(request, 'Por favor ingresa un término de búsqueda')
-            return redirect('importar_libros')
-        
-        api = GoogleBooksAPI()
-        resultados = api.buscar_libros(query, max_results)
-        
-        if resultados and 'items' in resultados:
-            libros_importados = 0
-            for item in resultados['items'][:max_results]:
-                libro = api.importar_libro_desde_api(item)
-                if libro:
-                    libros_importados += 1
-            
-            if libros_importados > 0:
-                messages.success(request, f'✅ Se importaron {libros_importados} libros correctamente')
-            else:
-                messages.info(request, 'No se pudieron importar nuevos libros (posiblemente ya existen)')
-        else:
-            messages.warning(request, 'No se encontraron libros con esos criterios')
-        
-        return redirect('libro_list')
+    resultados = None
+    query_actual = ""
     
-    return render(request, 'biblioteca/importar_libros.html')
+    # Manejar tanto GET como POST
+    if request.method in ['GET', 'POST']:
+        query = request.POST.get('query') or request.GET.get('q', '').strip()
+        max_results = int(request.POST.get('max_results') or request.GET.get('max_results', 5))
+        accion = request.POST.get('accion')
+        
+        query_actual = query
+        
+        if query:
+            api = GoogleBooksAPI()
+            resultados = api.buscar_libros(query, max_results)
+            
+            # Si es POST y se solicita importar
+            if request.method == 'POST' and accion == 'importar' and resultados and 'items' in resultados:
+                libros_importados = 0
+                for item in resultados['items'][:max_results]:
+                    libro = api.importar_libro_desde_api(item)
+                    if libro:
+                        libros_importados += 1
+                
+                if libros_importados > 0:
+                    messages.success(request, f'✅ Se importaron {libros_importados} libros correctamente')
+                    return redirect('libro_list')
+                else:
+                    messages.info(request, 'No se pudieron importar nuevos libros (posiblemente ya existen)')
+            
+            # Si hay error en la API
+            if 'error' in resultados:
+                messages.error(request, f'Error en la búsqueda: {resultados["error"]}')
+    
+    context = {
+        'resultados': resultados,
+        'query_actual': query_actual,
+        'user': request.user,
+    }
+    return render(request, 'biblioteca/importar_libros.html', context)
 
 @login_required
 def reservar_libro(request, id):

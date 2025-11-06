@@ -1,155 +1,213 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Importar Libros - Biblioteca Digital{% endblock %}
-
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 py-8 px-4">
-    <div class="max-w-4xl mx-auto">
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-display font-bold text-gray-800 dark:text-white mb-4">
-                Importar Libros desde 
-                <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Google Books</span>
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                <i class="fas fa-download mr-4 text-primary-500"></i>
+                Importar Libros
             </h1>
-            <p class="text-xl text-gray-600 dark:text-gray-300 mb-6">
-                Busca y importa libros automáticamente con portadas e información completa.
+            <p class="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                Busca y importa libros automáticamente desde Google Books API
             </p>
         </div>
 
         <!-- Search Form -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 p-6 mb-8">
-            <form method="get" class="space-y-4">
-                <div>
-                    <label for="q" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Término de búsqueda
-                    </label>
-                    <input type="text" name="q" id="q" value="{{ query }}" 
-                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
-                           placeholder="Ej: Harry Potter, Gabriel García Márquez, 9788437604947..."
-                           required>
-                </div>
-                
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <div class="flex-1">
-                        <label for="max_results" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Resultados máximos
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mb-8">
+            <form method="get" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-2">
+                        <label for="query" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-search mr-2"></i>
+                            Buscar Libros
                         </label>
-                        <select name="max_results" id="max_results" 
-                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white">
-                            <option value="10" {% if max_results == 10 %}selected{% endif %}>10 libros</option>
-                            <option value="20" {% if max_results == 20 %}selected{% endif %}>20 libros</option>
-                            <option value="40" {% if max_results == 40 %}selected{% endif %}>40 libros</option>
-                        </select>
+                        <input 
+                            type="text" 
+                            id="query" 
+                            name="q" 
+                            value="{{ query_actual }}"
+                            placeholder="Ingresa título, autor o ISBN..."
+                            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                            required
+                        >
                     </div>
                     
-                    <div class="flex items-end">
-                        <button type="submit" 
-                                class="w-full bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-lg font-semibold transition duration-200 flex items-center justify-center space-x-2">
-                            <i class="fas fa-search"></i>
-                            <span>Buscar Libros</span>
-                        </button>
+                    <div>
+                        <label for="max_results" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-list-ol mr-2"></i>
+                            Resultados
+                        </label>
+                        <select 
+                            id="max_results" 
+                            name="max_results"
+                            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                        >
+                            <option value="5">5 libros</option>
+                            <option value="10" selected>10 libros</option>
+                            <option value="15">15 libros</option>
+                            <option value="20">20 libros</option>
+                        </select>
                     </div>
+                </div>
+                
+                <div class="flex justify-center">
+                    <button 
+                        type="submit"
+                        class="bg-primary-500 hover:bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 flex items-center space-x-3"
+                    >
+                        <i class="fas fa-search"></i>
+                        <span>Buscar Libros</span>
+                    </button>
                 </div>
             </form>
         </div>
 
-        <!-- Results -->
-        {% if query %}
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 p-6">
-            <h2 class="text-2xl font-display font-bold text-gray-800 dark:text-white mb-6">
-                Resultados para "{{ query }}"
-            </h2>
-            
-            {% if libros %}
-            <div class="space-y-6">
-                {% for libro in libros %}
-                <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md dark:hover:shadow-gray-900/50 transition duration-200">
-                    <div class="flex flex-col md:flex-row gap-4">
-                        <!-- Book Cover -->
-                        <div class="flex-shrink-0">
-                            {% if libro.portada %}
-                                <img src="{{ libro.portada }}" alt="{{ libro.titulo }}" 
-                                     class="w-24 h-32 object-cover rounded-lg shadow-md">
-                            {% else %}
-                                <div class="w-24 h-32 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-book text-gray-400 dark:text-gray-500 text-2xl"></i>
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- Book Info -->
-                        <div class="flex-1">
-                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">
-                                {{ libro.titulo }}
-                            </h3>
-                            
-                            <p class="text-gray-600 dark:text-gray-400 mb-2">
-                                <strong>Autores:</strong> 
-                                {{ libro.autores|join:", "|default:"Desconocido" }}
-                            </p>
-                            
-                            {% if libro.descripcion %}
-                            <p class="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">
-                                {{ libro.descripcion }}
-                            </p>
-                            {% endif %}
-                            
-                            <div class="flex flex-wrap gap-2 mb-3">
-                                {% if libro.isbn %}
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                    ISBN: {{ libro.isbn }}
-                                </span>
-                                {% endif %}
-                                
-                                {% if libro.fecha_publicacion %}
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                    {{ libro.fecha_publicacion }}
-                                </span>
-                                {% endif %}
-                            </div>
-                            
-                            <form method="post" class="inline">
-                                {% csrf_token %}
-                                <input type="hidden" name="libro_data" value="{{ libro|safe }}">
-                                <button type="submit" 
-                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200 flex items-center space-x-2">
-                                    <i class="fas fa-download"></i>
-                                    <span>Importar a Biblioteca</span>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+        <!-- Results Section -->
+        {% if resultados %}
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+                        <i class="fas fa-books mr-3 text-primary-500"></i>
+                        Resultados de "{{ query_actual }}"
+                    </h2>
+                    <span class="bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 px-3 py-1 rounded-full text-sm font-medium">
+                        {{ resultados.items|length }} libros encontrados
+                    </span>
                 </div>
-                {% endfor %}
+
+                {% if resultados.items %}
+                    <form method="post" class="space-y-6">
+                        {% csrf_token %}
+                        <input type="hidden" name="query" value="{{ query_actual }}">
+                        <input type="hidden" name="max_results" value="{{ request.GET.max_results|default:'10' }}">
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                            {% for item in resultados.items %}
+                                {% with volume_info=item.volumeInfo %}
+                                <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 border-2 border-transparent hover:border-primary-300 transition-all duration-300">
+                                    <div class="flex space-x-4">
+                                        <!-- Book Cover -->
+                                        <div class="flex-shrink-0">
+                                            {% if volume_info.imageLinks and volume_info.imageLinks.thumbnail %}
+                                                <img 
+                                                    src="{{ volume_info.imageLinks.thumbnail }}" 
+                                                    alt="{{ volume_info.title }}"
+                                                    class="w-20 h-28 object-cover rounded-lg shadow-md"
+                                                >
+                                            {% else %}
+                                                <div class="w-20 h-28 bg-gray-200 dark:bg-gray-600 rounded-lg flex items-center justify-center">
+                                                    <i class="fas fa-book text-gray-400 text-2xl"></i>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <!-- Book Info -->
+                                        <div class="flex-1 min-w-0">
+                                            <h3 class="font-semibold text-gray-900 dark:text-white text-lg mb-2 line-clamp-2">
+                                                {{ volume_info.title }}
+                                            </h3>
+                                            
+                                            {% if volume_info.authors %}
+                                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                                    <i class="fas fa-user-edit mr-1"></i>
+                                                    {{ volume_info.authors|join:", "|truncatewords:3 }}
+                                                </p>
+                                            {% endif %}
+                                            
+                                            {% if volume_info.publishedDate %}
+                                                <p class="text-xs text-gray-500 dark:text-gray-500 mb-2">
+                                                    <i class="fas fa-calendar mr-1"></i>
+                                                    {{ volume_info.publishedDate|slice:":4" }}
+                                                </p>
+                                            {% endif %}
+                                            
+                                            {% if volume_info.categories %}
+                                                <div class="flex flex-wrap gap-1 mb-3">
+                                                    {% for category in volume_info.categories|slice:":2" %}
+                                                        <span class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded text-xs">
+                                                            {{ category }}
+                                                        </span>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <input type="checkbox" name="libros_seleccionados" value="{{ forloop.counter0 }}" class="hidden" checked>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endwith %}
+                            {% endfor %}
+                        </div>
+
+                        <!-- Import Button -->
+                        <div class="text-center">
+                            <button 
+                                type="submit"
+                                name="accion"
+                                value="importar"
+                                class="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 flex items-center space-x-3 mx-auto"
+                            >
+                                <i class="fas fa-download"></i>
+                                <span>Importar {{ resultados.items|length }} Libros</span>
+                            </button>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-3">
+                                Se importarán automáticamente todos los libros mostrados
+                            </p>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="text-center py-12">
+                        <i class="fas fa-search text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+                        <h3 class="text-xl font-semibold text-gray-500 dark:text-gray-400 mb-2">
+                            No se encontraron libros
+                        </h3>
+                        <p class="text-gray-400 dark:text-gray-500">
+                            Intenta con otros términos de búsqueda
+                        </p>
+                    </div>
+                {% endif %}
             </div>
-            {% else %}
-            <div class="text-center py-8">
-                <i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
-                <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">
-                    No se encontraron libros
-                </h3>
-                <p class="text-gray-500 dark:text-gray-500">
-                    Intenta con otros términos de búsqueda
-                </p>
-            </div>
-            {% endif %}
-        </div>
         {% endif %}
 
-        <!-- Instructions -->
-        <div class="mt-8 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-6">
-            <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-300 mb-3 flex items-center">
-                <i class="fas fa-info-circle mr-2"></i>
-                Cómo importar libros
-            </h3>
-            <ul class="text-blue-700 dark:text-blue-400 space-y-2 text-sm">
-                <li>• Busca por título, autor o ISBN</li>
-                <li>• La información se importa automáticamente desde Google Books</li>
-                <li>• Las portadas se descargan y almacenan localmente</li>
-                <li>• Los autores y categorías se crean automáticamente</li>
-            </ul>
+        <!-- Info Section -->
+        <div class="mt-12 bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-8 border border-blue-200 dark:border-blue-800">
+            <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-info-circle text-2xl text-blue-500"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                        ¿Cómo funciona la importación?
+                    </h3>
+                    <ul class="text-blue-700 dark:text-blue-300 space-y-2">
+                        <li class="flex items-center space-x-2">
+                            <i class="fas fa-check text-green-500"></i>
+                            <span>Los libros se importan automáticamente desde Google Books</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <i class="fas fa-check text-green-500"></i>
+                            <span>Se incluyen portadas, autores y categorías</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <i class="fas fa-check text-green-500"></i>
+                            <span>Evita duplicados mediante verificación de ISBN</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>
 {% endblock %}
