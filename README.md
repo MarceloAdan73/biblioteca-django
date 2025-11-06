@@ -72,35 +72,37 @@ A modern, full-featured digital library management system built with Django and 
 | ![Google Books API](https://img.shields.io/badge/-Google_Books_API-4285F4?logo=google&logoColor=white) | External Book Data Source |
 
 ## 📁 Project Architecture
-📁 biblioteca-django/
-├── 📁 biblioteca_project/          # Django project configuration
-│   ├── ⚙️ settings.py             # Project settings and configuration
-│   ├── 🔗 urls.py                 # Main URL routing
-│   └── 🌐 wsgi.py                 # WSGI application entry point
-├── 📁 biblioteca/                 # Main application module
-│   ├── 🗃️ models.py              # Database models and relationships
-│   ├── 🎯 views.py               # Business logic and view controllers
-│   ├── 🔗 urls.py                # Application URL routing
-│   ├── 👨‍💼 admin.py               # Django admin customization
-│   └── 📡 google_books.py        # Google Books API integration
-├── 📁 templates/                  # HTML template system
-│   ├── 🏗️ base.html              # Main layout template
-│   ├── 📁 biblioteca/            # Application-specific templates
-│   │   ├── 🏠 index.html         # Homepage
-│   │   ├── 📚 libro_list.html    # Book catalog
-│   │   ├── 🔍 libro_detail.html  # Book details
-│   │   ├── 👤 register.html      # User registration
-│   │   └── ⬇️ importar_libros.html # Book import interface
-│   └── 📁 registration/          # Authentication templates
-│       ├── 🔑 login.html         # Login page
-│       └── 🚪 logged_out.html    # Logout confirmation
-├── 📁 media/                     # User-uploaded files
-│   ├── 🖼️ portadas/              # Book cover images
-│   └── 👤 autores/               # Author photos
-├── 📋 requirements.txt           # Python dependencies
-├── 🚀 build.sh                   # Deployment build script
-├── ⚡ startup.py                 # Application initialization
-└── 📖 README.md                  # Project documentation
+```plaintext
+biblioteca-django/
+├── biblioteca_project/          # Django project configuration
+│   ├── settings.py             # Project settings and configuration
+│   ├── urls.py                 # Main URL routing
+│   └── wsgi.py                 # WSGI application entry point
+├── biblioteca/                 # Main application module
+│   ├── models.py              # Database models and relationships
+│   ├── views.py               # Business logic and view controllers
+│   ├── urls.py                # Application URL routing
+│   ├── admin.py               # Django admin customization
+│   └── google_books.py        # Google Books API integration
+├── templates/                  # HTML template system
+│   ├── base.html              # Main layout template
+│   ├── biblioteca/            # Application-specific templates
+│   │   ├── index.html         # Homepage
+│   │   ├── libro_list.html    # Book catalog
+│   │   ├── libro_detail.html  # Book details
+│   │   ├── register.html      # User registration
+│   │   └── importar_libros.html # Book import interface
+│   └── registration/          # Authentication templates
+│       ├── login.html         # Login page
+│       └── logged_out.html    # Logout confirmation
+├── media/                     # User-uploaded files
+│   ├── portadas/              # Book cover images
+│   └── autores/               # Author photos
+├── requirements.txt           # Python dependencies
+├── build.sh                   # Deployment build script
+├── startup.py                 # Application initialization
+└── README.md                  # Project documentation
+```
 
 ## 🗃️ Database Models
 
