@@ -5,16 +5,20 @@ from django.core.files.temp import NamedTemporaryFile
 from biblioteca.models import Libro, Autor, Categoria
 import urllib.request
 import os
+import time
+from django.conf import settings
 
 class GoogleBooksAPI:
     BASE_URL = "https://www.googleapis.com/books/v1/volumes"
     
     def __init__(self):
         self.session = requests.Session()
+        # Timeout más conservador para producción
+        self.timeout = 30
     
     def buscar_libros(self, query, max_results=10):
         """
-        Busca libros en Google Books API
+        Busca libros en Google Books API con mejor manejo de errores
         """
         params = {
             'q': query,
@@ -23,19 +27,39 @@ class GoogleBooksAPI:
         }
         
         try:
-            response = self.session.get(self.BASE_URL, params=params)
+            print(f"��� Buscando libros: {query}")
+            response = self.session.get(self.BASE_URL, params=params, timeout=self.timeout)
             response.raise_for_status()
-            return response.json()
-        except requests.RequestException as e:
-            print(f"Error en la API: {e}")
-            return None
+            data = response.json()
+            
+            if 'items' not in data or not data['items']:
+                print("⚠️ No se encontraron resultados")
+                return {'items': []}
+                
+            print(f"✅ Encontrados {len(data['items'])} resultados")
+            return data
+            
+        except requests.exceptions.Timeout:
+            print("❌ Timeout en la API de Google Books")
+            return {'error': 'Timeout en la búsqueda'}
+        except requests.exceptions.RequestException as e:
+            print(f"❌ Error de conexión: {e}")
+            return {'error': f'Error de conexión: {e}'}
+        except Exception as e:
+            print(f"❌ Error inesperado: {e}")
+            return {'error': f'Error inesperado: {e}'}
     
     def importar_libro_desde_api(self, book_data):
         """
-        Importa un libro desde los datos de la API a la base de datos
+        Importa un libro desde los datos de la API con mejor manejo de errores
         """
         try:
             volume_info = book_data.get('volumeInfo', {})
+            
+            # Verificar datos mínimos
+            if not volume_info.get('title'):
+                print("⚠️ Libro sin título, saltando...")
+                return None
             
             # Verificar si el libro ya existe por ISBN
             isbns = volume_info.get('industryIdentifiers', [])
@@ -43,30 +67,48 @@ class GoogleBooksAPI:
                 if isbn_info.get('type') in ['ISBN_13', 'ISBN_10']:
                     isbn = isbn_info.get('identifier')
                     if Libro.objects.filter(ISBN=isbn).exists():
-                        print(f"Libro con ISBN {isbn} ya existe")
+                        print(f"⚠️ Libro con ISBN {isbn} ya existe")
                         return None
             
             # Crear o obtener autores
             autores = []
-            for author_name in volume_info.get('authors', ['Autor Desconocido']):
-                autor, created = Autor.objects.get_or_create(
-                    nombre=author_name,
-                    defaults={
-                        'nacionalidad': 'Desconocida',
-                        'biografia': f'Autor del libro "{volume_info.get("title", "")}"'
-                    }
+            author_names = volume_info.get('authors', ['Autor Desconocido'])
+            for author_name in author_names:
+                if author_name:  # Verificar que el nombre no esté vacío
+                    autor, created = Autor.objects.get_or_create(
+                        nombre=author_name,
+                        defaults={
+                            'nacionalidad': 'Desconocida',
+                            'biografia': f'Autor del libro "{volume_info.get("title", "")}"'
+                        }
+                    )
+                    autores.append(autor)
+            
+            if not autores:  # Si no hay autores, crear uno por defecto
+                autor, _ = Autor.objects.get_or_create(
+                    nombre='Autor Desconocido',
+                    defaults={'nacionalidad': 'Desconocida'}
                 )
                 autores.append(autor)
             
             # Crear o obtener categorías
             categorias = []
-            for category_name in volume_info.get('categories', ['General']):
-                categoria, created = Categoria.objects.get_or_create(
-                    nombre=category_name[:50],
-                    defaults={
-                        'descripcion': f'Libros de {category_name}',
-                        'color': self._generar_color_aleatorio()
-                    }
+            category_names = volume_info.get('categories', ['General'])
+            for category_name in category_names:
+                if category_name:  # Verificar que la categoría no esté vacía
+                    categoria, created = Categoria.objects.get_or_create(
+                        nombre=category_name[:50],  # Limitar longitud
+                        defaults={
+                            'descripcion': f'Libros de {category_name}',
+                            'color': self._generar_color_aleatorio()
+                        }
+                    )
+                    categorias.append(categoria)
+            
+            if not categorias:  # Si no hay categorías, crear una por defecto
+                categoria, _ = Categoria.objects.get_or_create(
+                    nombre='General',
+                    defaults={'descripcion': 'Libros generales', 'color': '#3B82F6'}
                 )
                 categorias.append(categoria)
             
@@ -74,10 +116,10 @@ class GoogleBooksAPI:
             isbn = ""
             for isbn_info in isbns:
                 if isbn_info.get('type') == 'ISBN_13':
-                    isbn = isbn_info.get('identifier')
+                    isbn = isbn_info.get('identifier', '')
                     break
                 elif isbn_info.get('type') == 'ISBN_10' and not isbn:
-                    isbn = isbn_info.get('identifier')
+                    isbn = isbn_info.get('identifier', '')
             
             # Crear el libro
             libro = Libro.objects.create(
@@ -92,29 +134,34 @@ class GoogleBooksAPI:
             libro.autores.set(autores)
             libro.categorias.set(categorias)
             
-            # Descargar y guardar portada
+            # Intentar descargar portada (pero no fallar si no puede)
             image_links = volume_info.get('imageLinks', {})
             thumbnail_url = image_links.get('thumbnail') or image_links.get('smallThumbnail')
             
             if thumbnail_url:
                 try:
+                    # Limpiar URL
                     thumbnail_url = thumbnail_url.replace('http://', 'https://')
                     thumbnail_url = thumbnail_url.replace('&edge=curl', '')
                     
-                    response = self.session.get(thumbnail_url, timeout=10)
+                    print(f"��� Descargando portada: {thumbnail_url}")
+                    response = self.session.get(thumbnail_url, timeout=15)
                     if response.status_code == 200:
                         filename = f"portada_{libro.id}.jpg"
                         libro.portada.save(filename, ContentFile(response.content), save=True)
-                        print(f"Portada descargada para: {libro.titulo}")
+                        print(f"✅ Portada descargada para: {libro.titulo}")
+                    else:
+                        print(f"⚠️ No se pudo descargar portada, status: {response.status_code}")
                 except Exception as e:
-                    print(f"Error descargando portada: {e}")
+                    print(f"⚠️ Error descargando portada: {e}")
+                    # No fallar la importación por error de portada
             
             libro.save()
-            print(f"✅ Libro importado: {libro.titulo}")
+            print(f"✅ Libro importado exitosamente: {libro.titulo}")
             return libro
             
         except Exception as e:
-            print(f"❌ Error importando libro: {e}")
+            print(f"❌ Error crítico importando libro: {e}")
             return None
     
     def _generar_color_aleatorio(self):
