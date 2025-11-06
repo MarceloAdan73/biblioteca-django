@@ -27,26 +27,26 @@ class GoogleBooksAPI:
         }
         
         try:
-            print(f"��� Buscando libros: {query}")
+            print(f"Buscando libros: {query}")
             response = self.session.get(self.BASE_URL, params=params, timeout=self.timeout)
             response.raise_for_status()
             data = response.json()
             
             if 'items' not in data or not data['items']:
-                print("⚠️ No se encontraron resultados")
+                print("No se encontraron resultados")
                 return {'items': []}
                 
-            print(f"✅ Encontrados {len(data['items'])} resultados")
+            print(f"Encontrados {len(data['items'])} resultados")
             return data
             
         except requests.exceptions.Timeout:
-            print("❌ Timeout en la API de Google Books")
-            return {'error': 'Timeout en la búsqueda'}
+            print("Timeout en la API de Google Books")
+            return {'error': 'Timeout en la busqueda'}
         except requests.exceptions.RequestException as e:
-            print(f"❌ Error de conexión: {e}")
-            return {'error': f'Error de conexión: {e}'}
+            print(f"Error de conexion: {e}")
+            return {'error': f'Error de conexion: {e}'}
         except Exception as e:
-            print(f"❌ Error inesperado: {e}")
+            print(f"Error inesperado: {e}")
             return {'error': f'Error inesperado: {e}'}
     
     def importar_libro_desde_api(self, book_data):
@@ -58,7 +58,7 @@ class GoogleBooksAPI:
             
             # Verificar datos mínimos
             if not volume_info.get('title'):
-                print("⚠️ Libro sin título, saltando...")
+                print("Libro sin titulo, saltando...")
                 return None
             
             # Verificar si el libro ya existe por ISBN
@@ -67,7 +67,7 @@ class GoogleBooksAPI:
                 if isbn_info.get('type') in ['ISBN_13', 'ISBN_10']:
                     isbn = isbn_info.get('identifier')
                     if Libro.objects.filter(ISBN=isbn).exists():
-                        print(f"⚠️ Libro con ISBN {isbn} ya existe")
+                        print(f"Libro con ISBN {isbn} ya existe")
                         return None
             
             # Crear o obtener autores
@@ -123,9 +123,9 @@ class GoogleBooksAPI:
             
             # Crear el libro
             libro = Libro.objects.create(
-                titulo=volume_info.get('title', 'Sin título')[:200],
+                titulo=volume_info.get('title', 'Sin titulo')[:200],
                 ISBN=isbn,
-                descripcion=volume_info.get('description', 'Sin descripción disponible.')[:1000],
+                descripcion=volume_info.get('description', 'Sin descripcion disponible.')[:1000],
                 estado='Disponible',
                 stock=1
             )
@@ -144,24 +144,24 @@ class GoogleBooksAPI:
                     thumbnail_url = thumbnail_url.replace('http://', 'https://')
                     thumbnail_url = thumbnail_url.replace('&edge=curl', '')
                     
-                    print(f"��� Descargando portada: {thumbnail_url}")
+                    print(f"Descargando portada: {thumbnail_url}")
                     response = self.session.get(thumbnail_url, timeout=15)
                     if response.status_code == 200:
                         filename = f"portada_{libro.id}.jpg"
                         libro.portada.save(filename, ContentFile(response.content), save=True)
-                        print(f"✅ Portada descargada para: {libro.titulo}")
+                        print(f"Portada descargada para: {libro.titulo}")
                     else:
-                        print(f"⚠️ No se pudo descargar portada, status: {response.status_code}")
+                        print(f"No se pudo descargar portada, status: {response.status_code}")
                 except Exception as e:
-                    print(f"⚠️ Error descargando portada: {e}")
+                    print(f"Error descargando portada: {e}")
                     # No fallar la importación por error de portada
             
             libro.save()
-            print(f"✅ Libro importado exitosamente: {libro.titulo}")
+            print(f"Libro importado exitosamente: {libro.titulo}")
             return libro
             
         except Exception as e:
-            print(f"❌ Error crítico importando libro: {e}")
+            print(f"Error critico importando libro: {e}")
             return None
     
     def _generar_color_aleatorio(self):
