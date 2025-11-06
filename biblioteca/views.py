@@ -92,7 +92,7 @@ def importar_libros(request):
                 
                 if libros_importados > 0:
                     messages.success(request, f'✅ Se importaron {libros_importados} libros correctamente')
-                    return redirect('libro_list')
+                    return redirect(f"/importar-libros/?q={query}&max_results={max_results}")
                 else:
                     messages.info(request, 'No se pudieron importar nuevos libros (posiblemente ya existen)')
             
