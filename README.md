@@ -14,6 +14,8 @@
 - **Username:** `admin`
 - **Password:** `admin123**
 
+- ![Vista de la Biblioteca Digital](biblioteca-django.png)
+
 ---
 
 ## 📖 Overview
