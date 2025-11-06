@@ -34,7 +34,6 @@ def libro_list(request):
     query = request.GET.get('q')
     if query:
         libros = libros.filter(titulo__icontains=query)
-    
     context = {
         'libros': libros,
         'categorias': categorias,
