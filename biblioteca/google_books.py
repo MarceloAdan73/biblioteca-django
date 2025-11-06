@@ -1,11 +1,8 @@
 import requests
 import json
 from django.core.files.base import ContentFile
-from django.core.files.temp import NamedTemporaryFile
 from biblioteca.models import Libro, Autor, Categoria
-import urllib.request
 import os
-import time
 from django.conf import settings
 
 class GoogleBooksAPI:
@@ -13,13 +10,9 @@ class GoogleBooksAPI:
     
     def __init__(self):
         self.session = requests.Session()
-        # Timeout más conservador para producción
         self.timeout = 30
     
     def buscar_libros(self, query, max_results=10):
-        """
-        Busca libros en Google Books API con mejor manejo de errores
-        """
         params = {
             'q': query,
             'maxResults': max_results,
@@ -42,21 +35,14 @@ class GoogleBooksAPI:
         except requests.exceptions.Timeout:
             print("Timeout en la API de Google Books")
             return {'error': 'Timeout en la busqueda'}
-        except requests.exceptions.RequestException as e:
-            print(f"Error de conexion: {e}")
-            return {'error': f'Error de conexion: {e}'}
         except Exception as e:
-            print(f"Error inesperado: {e}")
-            return {'error': f'Error inesperado: {e}'}
+            print(f"Error: {e}")
+            return {'error': f'Error: {e}'}
     
     def importar_libro_desde_api(self, book_data):
-        """
-        Importa un libro desde los datos de la API con mejor manejo de errores
-        """
         try:
             volume_info = book_data.get('volumeInfo', {})
             
-            # Verificar datos mínimos
             if not volume_info.get('title'):
                 print("Libro sin titulo, saltando...")
                 return None
@@ -74,7 +60,7 @@ class GoogleBooksAPI:
             autores = []
             author_names = volume_info.get('authors', ['Autor Desconocido'])
             for author_name in author_names:
-                if author_name:  # Verificar que el nombre no esté vacío
+                if author_name:
                     autor, created = Autor.objects.get_or_create(
                         nombre=author_name,
                         defaults={
@@ -84,7 +70,7 @@ class GoogleBooksAPI:
                     )
                     autores.append(autor)
             
-            if not autores:  # Si no hay autores, crear uno por defecto
+            if not autores:
                 autor, _ = Autor.objects.get_or_create(
                     nombre='Autor Desconocido',
                     defaults={'nacionalidad': 'Desconocida'}
@@ -95,9 +81,9 @@ class GoogleBooksAPI:
             categorias = []
             category_names = volume_info.get('categories', ['General'])
             for category_name in category_names:
-                if category_name:  # Verificar que la categoría no esté vacía
+                if category_name:
                     categoria, created = Categoria.objects.get_or_create(
-                        nombre=category_name[:50],  # Limitar longitud
+                        nombre=category_name[:50],
                         defaults={
                             'descripcion': f'Libros de {category_name}',
                             'color': self._generar_color_aleatorio()
@@ -105,7 +91,7 @@ class GoogleBooksAPI:
                     )
                     categorias.append(categoria)
             
-            if not categorias:  # Si no hay categorías, crear una por defecto
+            if not categorias:
                 categoria, _ = Categoria.objects.get_or_create(
                     nombre='General',
                     defaults={'descripcion': 'Libros generales', 'color': '#3B82F6'}
@@ -134,24 +120,38 @@ class GoogleBooksAPI:
             libro.autores.set(autores)
             libro.categorias.set(categorias)
             
-            # Intentar descargar portada (pero no fallar si no puede)
+            # MEJORA: Descargar portada con mejor calidad
             image_links = volume_info.get('imageLinks', {})
-            thumbnail_url = image_links.get('thumbnail') or image_links.get('smallThumbnail')
+            thumbnail_url = None
+            
+            # Priorizar imágenes de mejor calidad
+            for quality in ['extraLarge', 'large', 'medium', 'thumbnail', 'smallThumbnail']:
+                if image_links.get(quality):
+                    thumbnail_url = image_links[quality]
+                    break
             
             if thumbnail_url:
                 try:
-                    # Limpiar URL
+                    # Limpiar y mejorar URL
                     thumbnail_url = thumbnail_url.replace('http://', 'https://')
                     thumbnail_url = thumbnail_url.replace('&edge=curl', '')
+                    thumbnail_url = thumbnail_url.replace('&zoom=1', '')
+                    thumbnail_url = thumbnail_url.replace('http:', 'https:')  # Doble seguridad
                     
                     print(f"Descargando portada: {thumbnail_url}")
                     response = self.session.get(thumbnail_url, timeout=15)
+                    
                     if response.status_code == 200:
-                        filename = f"portada_{libro.id}.jpg"
-                        libro.portada.save(filename, ContentFile(response.content), save=True)
-                        print(f"Portada descargada para: {libro.titulo}")
+                        # Verificar que sea una imagen válida
+                        if response.headers.get('content-type', '').startswith('image/'):
+                            filename = f"portada_{libro.id}.jpg"
+                            libro.portada.save(filename, ContentFile(response.content), save=True)
+                            print(f"Portada descargada exitosamente para: {libro.titulo}")
+                        else:
+                            print("La URL no devolvio una imagen valida")
                     else:
                         print(f"No se pudo descargar portada, status: {response.status_code}")
+                        
                 except Exception as e:
                     print(f"Error descargando portada: {e}")
                     # No fallar la importación por error de portada
