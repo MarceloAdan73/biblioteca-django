@@ -74,7 +74,7 @@
                 <!-- Navegación - DERECHA -->
                 <div class="hidden md:flex items-center space-x-6">
                     <!-- BOTÓN TEMA - PRIMER ELEMENTO A LA DERECHA -->
-                    <button @click="darkMode = !darkMode" class="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 p-2 rounded-lg transition-colors border border-gray-200 dark:border-gray-600">
+                    <button type="button" @click="darkMode = !darkMode" class="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 p-2 rounded-lg transition-colors border border-gray-200 dark:border-gray-600" aria-label="Cambiar tema">
                         <i class="fas fa-moon" x-show="!darkMode"></i>
                         <i class="fas fa-sun" x-show="darkMode"></i>
                     </button>
@@ -121,7 +121,7 @@
                     {% endif %}
                 </div>
                 <div class="md:hidden">
-                    <button type="button" @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-700 hover:text-primary-600 p-2 rounded-lg" aria-label="Abrir menú de navegación">
+                    <button type="button" @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-700 hover:text-primary-600 p-2 rounded-lg" aria-label="Abrir menú de navegación" title="Abrir menú de navegación">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
                 </div>
@@ -147,7 +147,7 @@
                     {% endif %}
 
                     <!-- Control de Tema en Móvil -->
-                    <button @click="darkMode = !darkMode" class="block w-full text-left text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium py-2 border-l-4 border-primary-500 pl-4">
+                    <button type="button" @click="darkMode = !darkMode" class="block w-full text-left text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium py-2 border-l-4 border-primary-500 pl-4" aria-label="Cambiar tema">
                         <i class="fas fa-moon mr-3" x-show="!darkMode"></i>
                         <i class="fas fa-sun mr-3" x-show="darkMode"></i>
                         Tema
@@ -222,26 +222,19 @@
                         <i class="fas fa-compass mr-2 text-primary-600"></i>
                         Navegación
                     </h4>
-                    <ul class="space-y-3">
-                        <li><a href="/" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center group">
+                    <ul class="space-y-3"><li><a href="/" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center group">
                             <i class="fas fa-home mr-3 text-gray-400 group-hover:text-primary-600 transition-colors w-4"></i>
                             Inicio
-                        </a></li>
-                        <li><a href="/libros/" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center group">
+                        </a></li><li><a href="/libros/" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center group">
                             <i class="fas fa-book mr-3 text-gray-400 group-hover:text-primary-600 transition-colors w-4"></i>
                             Catálogo
-                        </a></li>
-                        {% if user.is_authenticated %}
-                        <li><a href="/importar-libros/" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center group">
+                        </a></li>{% if user.is_authenticated %}<li><a href="/importar-libros/" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center group">
                             <i class="fas fa-download mr-3 text-gray-400 group-hover:text-primary-600 transition-colors w-4"></i>
                             Importar Libros
-                        </a></li>
-                        <li><a href="/mis-reservas/" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center group">
+                        </a></li><li><a href="/mis-reservas/" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center group">
                             <i class="fas fa-bookmark mr-3 text-gray-400 group-hover:text-primary-600 transition-colors w-4"></i>
                             Mis Reservas
-                        </a></li>
-                        {% endif %}
-                    </ul>
+                        </a></li>{% endif %}</ul>
                 </div>
 
                 <!-- Cuenta -->
@@ -250,27 +243,19 @@
                         <i class="fas fa-user-circle mr-2 text-primary-600"></i>
                         Tu Cuenta
                     </h4>
-                    <ul class="space-y-3">
-                        {% if user.is_authenticated %}
-                        <li class="flex items-center text-gray-600 dark:text-gray-300">
+                    <ul class="space-y-3">{% if user.is_authenticated %}<li class="flex items-center text-gray-600 dark:text-gray-300">
                             <i class="fas fa-user-check mr-3 text-green-500 w-4"></i>
                             <span class="font-medium">{{ user.username }}</span>
-                        </li>
-                        <li><a href="/accounts/logout/" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center group">
+                        </li><li><a href="/accounts/logout/" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center group">
                             <i class="fas fa-sign-out-alt mr-3 text-gray-400 group-hover:text-primary-600 transition-colors w-4"></i>
                             Cerrar Sesión
-                        </a></li>
-                        {% else %}
-                        <li><a href="/accounts/login/" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center group">
+                        </a></li>{% else %}<li><a href="/accounts/login/" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center group">
                             <i class="fas fa-sign-in-alt mr-3 text-gray-400 group-hover:text-primary-600 transition-colors w-4"></i>
                             Iniciar Sesión
-                        </a></li>
-                        <li><a href="/accounts/register/" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center group">
+                        </a></li><li><a href="/accounts/register/" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center group">
                             <i class="fas fa-user-plus mr-3 text-gray-400 group-hover:text-primary-600 transition-colors w-4"></i>
                             Registrarse
-                        </a></li>
-                        {% endif %}
-                    </ul>
+                        </a></li>{% endif %}</ul>
                 </div>
             </div>
 
@@ -308,8 +293,9 @@
          x-transition:leave-start="opacity-100 transform scale-100 translate-y-0"
          x-transition:leave-end="opacity-0 transform scale-50 translate-y-10">
         
-        <button @click="window.scrollTo({ top: 0, behavior: 'smooth' })"
-                class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 group">
+        <button type="button" @click="window.scrollTo({ top: 0, behavior: 'smooth' })"
+                class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 group"
+                aria-label="Volver arriba" title="Volver arriba">
             <i class="fas fa-chevron-up text-sm group-hover:-translate-y-0.5 transition-transform duration-300"></i>
         </button>
         
