@@ -176,3 +176,19 @@ def register_demo(request):
     
     # Mostrar template de registro demo
     return render(request, 'biblioteca/register.html')
+
+def register(request):
+    from django.shortcuts import render, redirect
+    from django.contrib.auth.forms import UserCreationForm
+    from django.contrib import messages
+    
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data.get('username')
+            messages.success(request, f'Cuenta creada para {username}! Ahora puedes iniciar sesión.')
+            return redirect('login')
+    else:
+        form = UserCreationForm()
+    return render(request, 'biblioteca/register.html', {'form': form})
