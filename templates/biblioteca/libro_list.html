@@ -1,112 +1,163 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Catálogo de Libros - Biblioteca Digital{% endblock %}
-
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 py-8 px-4">
-    <div class="max-w-7xl mx-auto">
-        <!-- Header del Catálogo -->
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
         <div class="text-center mb-12">
-            <h1 class="text-4xl md:text-5xl font-display font-bold text-gray-800 dark:text-white mb-4">
-                Catálogo de 
-                <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    Libros
-                </span>
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                <i class="fas fa-books mr-4 text-primary-500"></i>
+                Catálogo de Libros
             </h1>
-            <p class="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-                Explora nuestra colección completa de libros disponibles para descubrir.
+            <p class="text-xl text-gray-600 dark:text-gray-300">
+                Explora nuestra colección completa de libros
             </p>
         </div>
 
-        <!-- Grid de libros -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <!-- Search and Filter -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Search Form -->
+                <form method="get" class="flex space-x-4">
+                    <div class="flex-1">
+                        <input 
+                            type="text" 
+                            name="q" 
+                            value="{{ request.GET.q }}"
+                            placeholder="Buscar libros..."
+                            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                        >
+                    </div>
+                    <button 
+                        type="submit"
+                        class="bg-primary-500 hover:bg-primary-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+                    >
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+
+                <!-- Category Filter -->
+                <form method="get" class="flex space-x-4">
+                    <div class="flex-1">
+                        <select 
+                            name="categoria"
+                            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                            onchange="this.form.submit()"
+                        >
+                            <option value="">Todas las categorías</option>
+                            {% for categoria in categorias %}
+                                <option value="{{ categoria.id }}" 
+                                    {% if request.GET.categoria == categoria.id|stringformat:"i" %}selected{% endif %}>
+                                    {{ categoria.nombre }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Books Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {% for libro in libros %}
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900/30 hover:shadow-xl dark:hover:shadow-gray-900/50 transition-all duration-300 overflow-hidden book-card">
-                <!-- Portada del libro -->
-                <div class="h-48 bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
-                    {% if libro.portada %}
-                        <img src="{{ libro.portada.url }}" alt="{{ libro.titulo }}" 
-                             class="w-full h-full object-cover hover:scale-105 transition duration-300">
-                    {% else %}
-                        <div class="text-gray-400 dark:text-gray-500 text-center">
-                            <i class="fas fa-book text-4xl mb-2"></i>
-                            <p class="text-sm">Sin portada</p>
+            <div class="book-card bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
+                <a href="{% url 'libro_detail' libro.id %}" class="block">
+                    <!-- Book Cover -->
+                    <div class="relative overflow-hidden bg-gray-200 dark:bg-gray-700">
+                        <img 
+                            src="{{ libro.get_portada_url }}" 
+                            alt="{{ libro.titulo }}"
+                            class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                            onerror="this.src='{% static 'images/default-book-cover.jpg' %}'"
+                        >
+                        <div class="absolute top-4 right-4">
+                            {% if libro.estado == 'Disponible' %}
+                                <span class="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                                    Disponible
+                                </span>
+                            {% else %}
+                                <span class="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                                    {{ libro.estado }}
+                                </span>
+                            {% endif %}
                         </div>
-                    {% endif %}
-                </div>
-                
-                <!-- Información del libro -->
-                <div class="p-4">
-                    <h3 class="font-bold text-lg mb-2 text-gray-900 dark:text-white line-clamp-2">{{ libro.titulo }}</h3>
-                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-3">
-                        <i class="fas fa-user-edit mr-1"></i>
-                        {% for autor in libro.autores.all %}
-                        {{ autor.nombre }}{% if not forloop.last %}, {% endif %}
-                        {% empty %}
-                        Autor desconocido
-                        {% endfor %}
-                    </p>
-                    <div class="flex flex-wrap gap-1 mb-3">
-                        {% for categoria in libro.categorias.all %}
-                        <span class="px-2 py-1 text-xs rounded-full text-white" style="background-color: {{ categoria.color }}">
-                            {{ categoria.nombre }}
-                        </span>
-                        {% endfor %}
                     </div>
-                    <div class="flex justify-between items-center">
-                        <span class="px-2 py-1 text-xs rounded-full 
-                                    {% if libro.estado == 'Disponible' %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
-                                    {% elif libro.estado == 'Prestado' %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
-                                    {% else %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200{% endif %}">
-                            {{ libro.estado }}
-                        </span>
-                        <a href="{% url 'libro_detail' libro.id %}" 
-                           class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium">
-                            Ver detalles →
-                        </a>
+
+                    <!-- Book Info -->
+                    <div class="p-6">
+                        <h3 class="font-bold text-gray-900 dark:text-white text-lg mb-2 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                            {{ libro.titulo }}
+                        </h3>
+                        
+                        {% if libro.autores.all %}
+                        <p class="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-1">
+                            <i class="fas fa-user-edit mr-2"></i>
+                            {{ libro.autores.all|join:", " }}
+                        </p>
+                        {% endif %}
+
+                        <!-- Categories -->
+                        {% if libro.categorias.all %}
+                        <div class="flex flex-wrap gap-1 mb-4">
+                            {% for categoria in libro.categorias.all|slice:":2" %}
+                                <span class="px-2 py-1 rounded text-xs font-medium text-white" style="background-color: {{ categoria.color }};">
+                                    {{ categoria.nombre }}
+                                </span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Stock Info -->
+                        <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+                            <span>
+                                <i class="fas fa-copy mr-1"></i>
+                                Stock: {{ libro.stock }}
+                            </span>
+                            {% if user.is_authenticated and libro.estado == 'Disponible' and libro.stock > 0 %}
+                            <a href="{% url 'reservar_libro' libro.id %}" 
+                               class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center space-x-2"
+                               onclick="return confirm('¿Reservar {{ libro.titulo }}?')">
+                                <i class="fas fa-bookmark"></i>
+                                <span>Reservar</span>
+                            </a>
+                            {% endif %}
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
             {% empty %}
             <div class="col-span-full text-center py-12">
                 <i class="fas fa-book-open text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
-                <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No hay libros disponibles</h3>
-                <p class="text-gray-500 dark:text-gray-500 mb-4">
-                    {% if user.is_authenticated %}
-                        Prueba importando algunos libros desde la sección de importación.
+                <h3 class="text-xl font-semibold text-gray-500 dark:text-gray-400 mb-2">
+                    No se encontraron libros
+                </h3>
+                <p class="text-gray-400 dark:text-gray-500">
+                    {% if request.GET.q %}
+                        Intenta con otros términos de búsqueda
                     {% else %}
-                        Inicia sesión para acceder a más funciones.
+                        El catálogo está vacío
                     {% endif %}
                 </p>
-                {% if user.is_authenticated %}
-                <a href="{% url 'importar_libros' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium">
-                    Importar Libros
-                </a>
-                {% else %}
-                <a href="{% url 'login' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium">
-                    Iniciar Sesión
-                </a>
-                {% endif %}
             </div>
             {% endfor %}
         </div>
-
-        <!-- Información adicional -->
-        <div class="mt-12 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-6">
-            <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-300 mb-3 flex items-center">
-                <i class="fas fa-info-circle mr-2"></i>
-                Sobre nuestro catálogo
-            </h3>
-            <p class="text-blue-700 dark:text-blue-400 text-sm">
-                Nuestro catálogo se actualiza regularmente con nuevos títulos. 
-                {% if user.is_authenticated %}
-                    Puedes importar libros automáticamente desde Google Books usando la función de importación.
-                {% else %}
-                    <a href="{% url 'register' %}" class="font-medium underline">Regístrate</a> para acceder a todas las funciones.
-                {% endif %}
-            </p>
-        </div>
     </div>
 </div>
+
+<style>
+.line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>
 {% endblock %}

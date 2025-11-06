@@ -41,6 +41,7 @@ class Libro(models.Model):
     estado = models.CharField(max_length=20, choices=ESTADOS, default='Disponible')
     stock = models.IntegerField(default=1)
     portada = models.ImageField(upload_to='portadas/', blank=True, null=True)
+    portada_url = models.URLField(blank=True, max_length=500)  # NUEVO: Guardar URL original
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -48,6 +49,15 @@ class Libro(models.Model):
 
     def get_absolute_url(self):
         return reverse('detalle_libro', kwargs={'pk': self.pk})
+
+    def get_portada_url(self):
+        """Devuelve la URL de la portada: local si existe, sino la URL original"""
+        if self.portada:
+            return self.portada.url
+        elif self.portada_url:
+            return self.portada_url
+        else:
+            return '/static/images/default-book-cover.jpg'  # Imagen por defecto
 
     class Meta:
         verbose_name_plural = "Libros"
