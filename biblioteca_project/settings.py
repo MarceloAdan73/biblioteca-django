@@ -164,3 +164,19 @@ if 'RENDER' in os.environ:
     }
     # Static files para producción
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Configuración para servir archivos estáticos y medios en Render
+if 'RENDER' in os.environ:
+    # Configuración de archivos estáticos
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    STATIC_URL = '/static/'
+    
+    # Configuración de archivos de medios
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    MEDIA_URL = '/media/'
+    
+    # Middleware para servir archivos estáticos en producción
+    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+    
+    # Configuración de WhiteNoise para archivos estáticos
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
