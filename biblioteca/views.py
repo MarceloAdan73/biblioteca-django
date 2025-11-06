@@ -66,6 +66,7 @@ def custom_logout(request):
     return redirect('/')
 
 @login_required
+@login_required
 def importar_libros(request):
     resultados = None
     query_actual = ""
