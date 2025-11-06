@@ -107,53 +107,18 @@ class GoogleBooksAPI:
                 elif isbn_info.get('type') == 'ISBN_10' and not isbn:
                     isbn = isbn_info.get('identifier', '')
             
-            # OBTENER URL DE PORTADA
-            portada_url = ""
-            image_links = volume_info.get('imageLinks', {})
-            
-            # Priorizar imágenes de mejor calidad
-            for quality in ['extraLarge', 'large', 'medium', 'thumbnail', 'smallThumbnail']:
-                if image_links.get(quality):
-                    portada_url = image_links[quality]
-                    # Limpiar URL
-                    portada_url = portada_url.replace('http://', 'https://')
-                    portada_url = portada_url.replace('&edge=curl', '')
-                    portada_url = portada_url.replace('&zoom=1', '')
-                    break
-            
-            # Crear el libro CON LA URL DE PORTADA
+            # Crear el libro
             libro = Libro.objects.create(
                 titulo=volume_info.get('title', 'Sin titulo')[:200],
                 ISBN=isbn,
                 descripcion=volume_info.get('description', 'Sin descripcion disponible.')[:1000],
                 estado='Disponible',
-                stock=1,
-                portada_url=portada_url  # GUARDAR LA URL ORIGINAL
+                stock=1
             )
             
             # Agregar relaciones ManyToMany
             libro.autores.set(autores)
             libro.categorias.set(categorias)
-            
-            # Intentar descargar portada localmente (pero no es crítico)
-            if portada_url:
-                try:
-                    print(f"Intentando descargar portada: {portada_url}")
-                    response = self.session.get(portada_url, timeout=15)
-                    
-                    if response.status_code == 200:
-                        if response.headers.get('content-type', '').startswith('image/'):
-                            filename = f"portada_{libro.id}.jpg"
-                            libro.portada.save(filename, ContentFile(response.content), save=True)
-                            print(f"Portada local descargada para: {libro.titulo}")
-                        else:
-                            print("La URL no devolvio una imagen valida")
-                    else:
-                        print(f"No se pudo descargar portada local, status: {response.status_code}")
-                        
-                except Exception as e:
-                    print(f"Error descargando portada local: {e}")
-                    # No es crítico - ya tenemos la URL
             
             libro.save()
             print(f"Libro importado exitosamente: {libro.titulo}")
