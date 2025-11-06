@@ -87,11 +87,11 @@
                     {% if user.is_authenticated %}
                         <a href="/importar-libros/" class="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors flex items-center space-x-1">
                             <i class="fas fa-download text-sm"></i>
-                            <span>Importar Libros</span>
+                            <span>Importar Libros</span></button></form>
                         </a>
                         <a href="/mis-reservas/" class="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors flex items-center space-x-1">
                             <i class="fas fa-bookmark text-sm"></i>
-                            <span>Mis Reservas</span>
+                            <span>Mis Reservas</span></button></form>
                         </a>
                     {% endif %}
                     
@@ -101,11 +101,11 @@
                         <!-- Badge de usuario con corona -->
                         <div class="user-badge px-3 py-1 rounded-full text-white text-sm font-medium flex items-center space-x-2">
                             <i class="fas fa-crown text-yellow-300"></i>
-                            <span>{{ user.username }}</span>
+                            <span>{{ user.username }}</span></button></form>
                         </div>
-                        <a href="{% url 'logout' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium transition-all flex items-center space-x-2">
+                        <form action="{% url 'logout' %}" method="post" style="display: inline;">{% csrf_token %}<button type="submit" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium transition-all flex items-center space-x-2">
                             <i class="fas fa-sign-out-alt"></i>
-                            <span>Salir</span>
+                            <span>Salir</span></button></form>
                         </a>
                     </div>
                     {% else %}
@@ -115,7 +115,7 @@
                         </a>
                         <a href="/accounts/register/" class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg font-medium transition-all flex items-center space-x-2">
                             <i class="fas fa-user-plus"></i>
-                            <span>Registrarse</span>
+                            <span>Registrarse</span></button></form>
                         </a>
                     </div>
                     {% endif %}
@@ -157,9 +157,9 @@
                     <div class="pt-4 border-t border-gray-200 dark:border-gray-600 space-y-2">
                         <div class="user-badge px-4 py-2 rounded-lg text-white font-medium flex items-center">
                             <i class="fas fa-user mr-3"></i>
-                            <span>Hola, {{ user.username }}</span>
+                            <span>Hola, {{ user.username }}</span></button></form>
                         </div>
-                        <a href="{% url 'logout' %}" class="block w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-3 rounded-lg font-medium">
+                        <form action="{% url 'logout' %}" method="post" class="block w-full">{% csrf_token %}<button type="submit" class="block w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-3 rounded-lg font-medium">
                             <i class="fas fa-sign-out-alt mr-3"></i>Cerrar Sesión
                         </a>
                     </div>
@@ -245,8 +245,8 @@
                     </h4>
                     <ul class="space-y-3">{% if user.is_authenticated %}<li class="flex items-center text-gray-600 dark:text-gray-300">
                             <i class="fas fa-user-check mr-3 text-green-500 w-4"></i>
-                            <span class="font-medium">{{ user.username }}</span>
-                        </li><li><a href="{% url 'logout' %}" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center group">
+                            <span class="font-medium">{{ user.username }}</span></button></form>
+                        </li><li><form action="{% url 'logout' %}" method="post" style="display: inline;">{% csrf_token %}<button type="submit" class="text-gray-600 bg-transparent border-none p-0 text-left dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center group">
                             <i class="fas fa-sign-out-alt mr-3 text-gray-400 group-hover:text-primary-600 transition-colors w-4"></i>
                             Cerrar Sesión
                         </a></li>{% else %}<li><a href="/accounts/login/" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center group">
@@ -265,7 +265,7 @@
                     <p class="text-gray-500 dark:text-gray-400 text-sm">
                         &copy; 2024 BibliotecaDigital. 
                         {% if user.is_authenticated %}
-                            <span class="text-green-600 dark:text-green-400 font-medium">Sesión activa · Acceso completo</span>
+                            <span class="text-green-600 dark:text-green-400 font-medium">Sesión activa · Acceso completo</span></button></form>
                         {% else %}
                             Desarrollado con Django + Tailwind CSS + Alpine.js
                         {% endif %}
@@ -274,7 +274,7 @@
                         <span class="flex items-center">
                             <i class="fas fa-books mr-2"></i>
                             Libros en catálogo
-                        </span>
+                        </span></button></form>
                     </div>
                 </div>
             </div>
