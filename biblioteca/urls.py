@@ -1,5 +1,6 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
+from django.views.generic import RedirectView
 from . import views
 
 urlpatterns = [
@@ -13,4 +14,7 @@ urlpatterns = [
     # URLs de autenticación CORREGIDAS
     path('accounts/login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
     path('accounts/logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
+    
+    # REDIRECCIÓN PARA ELIMINAR REGISTRO POR DEFECTO
+    path('accounts/register/', RedirectView.as_view(pattern_name='register')),
 ]
