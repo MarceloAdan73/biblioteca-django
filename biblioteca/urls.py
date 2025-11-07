@@ -8,7 +8,7 @@ urlpatterns = [
     path('libros/<int:id>/', views.libro_detail, name='libro_detail'),
     path('importar-libros/', views.importar_libros, name='importar_libros'),
     path('mis-reservas/', views.mis_reservas, name='mis_reservas'),
-    path('register/', views.register, name='register'),
+    path('register/', views.register_demo, name='register'),
     
     # URLs de autenticación CORREGIDAS
     path('accounts/login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
