@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Biblioteca Digital · Gestiona tu conocimiento{% endblock %}</title>
-
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -113,7 +115,7 @@
                         <a href="/accounts/login/" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors">
                             Iniciar Sesión
                         </a>
-                        <a href="/accounts/register/" class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg font-medium transition-all flex items-center space-x-2">
+                        <a href="/register/" class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg font-medium transition-all flex items-center space-x-2">
                             <i class="fas fa-user-plus"></i>
                             <span>Registrarse</span></button></form>
                         </a>
@@ -168,7 +170,7 @@
                         <a href="/accounts/login/" class="block w-full bg-primary-500 hover:bg-primary-600 text-white px-4 py-3 rounded-lg font-medium">
                             <i class="fas fa-user mr-3"></i>Iniciar Sesión
                         </a>
-                        <a href="/accounts/register/" class="block w-full border border-primary-500 text-primary-600 hover:bg-primary-50 px-4 py-3 rounded-lg font-medium">
+                        <a href="/register/" class="block w-full border border-primary-500 text-primary-600 hover:bg-primary-50 px-4 py-3 rounded-lg font-medium">
                             <i class="fas fa-user-plus mr-3"></i>Crear Cuenta
                         </a>
                     </div>
@@ -210,7 +212,7 @@
                             Explora, descubre y gestiona tu colección literaria personal con todas las funciones premium desbloqueadas.
                         {% else %}
                             Plataforma moderna para gestión de bibliotecas. 
-                            <a href="/accounts/register/" class="text-primary-600 dark:text-primary-400 hover:underline font-medium">Regístrate gratis</a> 
+                            <a href="/register/" class="text-primary-600 dark:text-primary-400 hover:underline font-medium">Regístrate gratis</a> 
                             para desbloquear todas las funciones.
                         {% endif %}
                     </p>
@@ -252,7 +254,7 @@
                         </a></li>{% else %}<li><a href="/accounts/login/" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center group">
                             <i class="fas fa-sign-in-alt mr-3 text-gray-400 group-hover:text-primary-600 transition-colors w-4"></i>
                             Iniciar Sesión
-                        </a></li><li><a href="/accounts/register/" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center group">
+                        </a></li><li><a href="/register/" class="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex items-center group">
                             <i class="fas fa-user-plus mr-3 text-gray-400 group-hover:text-primary-600 transition-colors w-4"></i>
                             Registrarse
                         </a></li>{% endif %}</ul>
