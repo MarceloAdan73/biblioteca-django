@@ -175,7 +175,7 @@ def register_demo(request):
         return redirect('login')
     
     # Mostrar template de registro demo
-    return render(request, 'biblioteca/register.html')
+    return render(request, 'registration/register.html')
 
 def register(request):
     from django.shortcuts import render, redirect
@@ -191,4 +191,4 @@ def register(request):
             return redirect('login')
     else:
         form = UserCreationForm()
-    return render(request, 'biblioteca/register.html', {'form': form})
+    return render(request, 'registration/register.html', {'form': form})
