@@ -12,7 +12,7 @@ def index(request):
     libros_destacados = Libro.objects.filter(estado='Disponible')[:6]
     total_libros = Libro.objects.count()
     total_disponibles = Libro.objects.filter(estado='Disponible').count()
-    
+
     context = {
         'libros_destacados': libros_destacados,
         'total_libros': total_libros,
@@ -24,16 +24,7 @@ def index(request):
 def libro_list(request):
     libros = Libro.objects.all()
     categorias = Categoria.objects.all()
-    
-    # Filtrar por categoría si se proporciona
-    categoria_id = request.GET.get('categoria')
-    if categoria_id:
-        libros = libros.filter(categorias__id=categoria_id)
-    
-    # Buscar por query si se proporciona
-    query = request.GET.get('q')
-    if query:
-        libros = libros.filter(titulo__icontains=query)
+
     context = {
         'libros': libros,
         'categorias': categorias,
@@ -65,15 +56,14 @@ def custom_logout(request):
     return redirect('/')
 
 @login_required
-@login_required
 def importar_libros(request):
     resultados = None
     query_actual = ""
     
-    # Manejar tanto GET como POST
-    if request.method in ['GET', 'POST']:
-        query = request.POST.get('query') or request.GET.get('q', '').strip()
-        max_results = int(request.POST.get('max_results') or request.GET.get('max_results', 5))
+    # SOLO manejar POST
+    if request.method == 'POST':
+        query = request.POST.get('q', '').strip()
+        max_results = int(request.POST.get('max_results', 10))
         accion = request.POST.get('accion')
         
         query_actual = query
@@ -82,8 +72,8 @@ def importar_libros(request):
             api = GoogleBooksAPI()
             resultados = api.buscar_libros(query, max_results)
             
-            # Si es POST y se solicita importar
-            if request.method == 'POST' and accion == 'importar' and resultados and 'items' in resultados:
+            # Si se solicita importar
+            if accion == 'importar' and resultados and 'items' in resultados:
                 libros_importados = 0
                 for item in resultados['items'][:max_results]:
                     libro = api.importar_libro_desde_api(item)
@@ -92,7 +82,7 @@ def importar_libros(request):
                 
                 if libros_importados > 0:
                     messages.success(request, f'✅ Se importaron {libros_importados} libros correctamente')
-                    return redirect(f"/importar-libros/?q={query}&max_results={max_results}")
+                    return redirect('libro_list')
                 else:
                     messages.info(request, 'No se pudieron importar nuevos libros (posiblemente ya existen)')
             
@@ -110,39 +100,39 @@ def importar_libros(request):
 @login_required
 def reservar_libro(request, id):
     libro = get_object_or_404(Libro, id=id)
-    
+
     if libro.estado != 'Disponible' or libro.stock < 1:
         messages.error(request, 'Este libro no está disponible para reserva')
         return redirect('libro_detail', id=id)
-    
+
     reserva_existente = Prestamo.objects.filter(
-        usuario=request.user, 
+        usuario=request.user,
         libro=libro,
         estado='Activo'
     ).exists()
-    
+
     if reserva_existente:
         messages.warning(request, 'Ya tienes una reserva activa para este libro')
         return redirect('libro_detail', id=id)
-    
+
     Prestamo.objects.create(
         libro=libro,
         usuario=request.user,
         estado='Activo'
     )
-    
+
     libro.stock -= 1
     if libro.stock == 0:
         libro.estado = 'Prestado'
     libro.save()
-    
+
     messages.success(request, f'✅ ¡Libro "{libro.titulo}" reservado exitosamente!')
     return redirect('mis_reservas')
 
 @login_required
 def mis_reservas(request):
     reservas = Prestamo.objects.filter(usuario=request.user, estado='Activo')
-    
+
     context = {
         'reservas': reservas,
         'user': request.user,
@@ -153,17 +143,17 @@ def mis_reservas(request):
 def cancelar_reserva(request, id):
     reserva = get_object_or_404(Prestamo, id=id, usuario=request.user, estado='Activo')
     libro = reserva.libro
-    
+
     # Restaurar stock del libro
     libro.stock += 1
     if libro.estado == 'Prestado':
         libro.estado = 'Disponible'
     libro.save()
-    
+
     # Cambiar estado de la reserva
     reserva.estado = 'Devuelto'
     reserva.save()
-    
+
     messages.success(request, f'❌ Reserva de "{libro.titulo}" cancelada exitosamente')
     return redirect('mis_reservas')
 
@@ -173,22 +163,6 @@ def register_demo(request):
         # En un demo, cualquier POST redirige al login
         messages.info(request, 'Esta es una versión demo. Usa las credenciales proporcionadas.')
         return redirect('login')
-    
-    # Mostrar template de registro demo
-    return render(request, 'registration/register.html')
 
-def register(request):
-    from django.shortcuts import render, redirect
-    from django.contrib.auth.forms import UserCreationForm
-    from django.contrib import messages
-    
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            form.save()
-            username = form.cleaned_data.get('username')
-            messages.success(request, f'Cuenta creada para {username}! Ahora puedes iniciar sesión.')
-            return redirect('login')
-    else:
-        form = UserCreationForm()
-    return render(request, 'registration/register.html', {'form': form})
+    # Mostrar template de registro demo
+    return render(request, 'biblioteca/register.html')

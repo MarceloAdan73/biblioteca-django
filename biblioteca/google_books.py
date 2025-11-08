@@ -107,13 +107,17 @@ class GoogleBooksAPI:
                 elif isbn_info.get('type') == 'ISBN_10' and not isbn:
                     isbn = isbn_info.get('identifier', '')
             
-            # Crear el libro
+            # Obtener URL de portada - CORRECCIÓN
+            portada_url = None
+            if volume_info.get('imageLinks') and volume_info.get('imageLinks').get('thumbnail'):
+                portada_url = volume_info['imageLinks']['thumbnail']
+            
             libro = Libro.objects.create(
                 titulo=volume_info.get('title', 'Sin titulo')[:200],
                 ISBN=isbn,
                 descripcion=volume_info.get('description', 'Sin descripcion disponible.')[:1000],
                 estado='Disponible',
-                stock=1
+                stock=1,
             )
             
             # Agregar relaciones ManyToMany
@@ -121,11 +125,11 @@ class GoogleBooksAPI:
             libro.categorias.set(categorias)
             
             libro.save()
-            print(f"Libro importado exitosamente: {libro.titulo}")
+            print(f"✅ Libro importado exitosamente: {libro.titulo}")
             return libro
             
         except Exception as e:
-            print(f"Error critico importando libro: {e}")
+            print(f"❌ Error importando libro: {e}")
             return None
     
     def _generar_color_aleatorio(self):

@@ -1,20 +1,15 @@
 from django.urls import path
-from django.contrib.auth import views as auth_views
-from django.views.generic import RedirectView
 from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
     path('libros/', views.libro_list, name='libro_list'),
     path('libros/<int:id>/', views.libro_detail, name='libro_detail'),
+    path('accounts/login/', views.custom_login, name='login'),
+    path('accounts/logout/', views.custom_logout, name='logout'),
+    path('accounts/register/', views.register_demo, name='register'),  # Cambiado a vista demo
     path('importar-libros/', views.importar_libros, name='importar_libros'),
+    path('reservar/<int:id>/', views.reservar_libro, name='reservar_libro'),
     path('mis-reservas/', views.mis_reservas, name='mis_reservas'),
-    path('register/', views.register_demo, name='register'),
-    
-    # URLs de autenticación CORREGIDAS
-    path('accounts/login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
-    path('accounts/logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
-    
-    # REDIRECCIÓN PARA ELIMINAR REGISTRO POR DEFECTO
-    path('accounts/register/', RedirectView.as_view(pattern_name='register')),
+    path('cancelar-reserva/<int:id>/', views.cancelar_reserva, name='cancelar_reserva'),
 ]
