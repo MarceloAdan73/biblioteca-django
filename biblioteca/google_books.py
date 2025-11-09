@@ -4,6 +4,7 @@ from django.core.files.base import ContentFile
 from biblioteca.models import Libro, Autor, Categoria
 import os
 from django.conf import settings
+import uuid
 
 class GoogleBooksAPI:
     BASE_URL = "https://www.googleapis.com/books/v1/volumes"
@@ -13,6 +14,7 @@ class GoogleBooksAPI:
         self.timeout = 30
     
     def buscar_libros(self, query, max_results=10):
+        # ... (mantener código existente igual) ...
         params = {
             'q': query,
             'maxResults': max_results,
@@ -56,7 +58,7 @@ class GoogleBooksAPI:
                         print(f"Libro con ISBN {isbn} ya existe")
                         return None
             
-            # Crear o obtener autores
+            # Crear o obtener autores (mantener igual)
             autores = []
             author_names = volume_info.get('authors', ['Autor Desconocido'])
             for author_name in author_names:
@@ -77,7 +79,7 @@ class GoogleBooksAPI:
                 )
                 autores.append(autor)
             
-            # Crear o obtener categorías
+            # Crear o obtener categorías (mantener igual)
             categorias = []
             category_names = volume_info.get('categories', ['General'])
             for category_name in category_names:
@@ -98,7 +100,7 @@ class GoogleBooksAPI:
                 )
                 categorias.append(categoria)
             
-            # Determinar ISBN
+            # Determinar ISBN (mantener igual)
             isbn = ""
             for isbn_info in isbns:
                 if isbn_info.get('type') == 'ISBN_13':
@@ -107,22 +109,38 @@ class GoogleBooksAPI:
                 elif isbn_info.get('type') == 'ISBN_10' and not isbn:
                     isbn = isbn_info.get('identifier', '')
             
-            # Obtener URL de portada - CORRECCIÓN
+            # Obtener URL de portada - SIEMPRE guardarla
             portada_url = None
             if volume_info.get('imageLinks') and volume_info.get('imageLinks').get('thumbnail'):
                 portada_url = volume_info['imageLinks']['thumbnail']
             
+            # CREAR LIBRO CON portada_url
             libro = Libro.objects.create(
                 titulo=volume_info.get('title', 'Sin titulo')[:200],
                 ISBN=isbn,
                 descripcion=volume_info.get('description', 'Sin descripcion disponible.')[:1000],
                 estado='Disponible',
                 stock=1,
+                portada_url=portada_url,  # ← NUEVO: Guardar URL siempre
             )
             
             # Agregar relaciones ManyToMany
             libro.autores.set(autores)
             libro.categorias.set(categorias)
+            
+            # DESCARGAR PORTADA SOLO EN DESARROLLO
+            if portada_url and settings.DEBUG:
+                try:
+                    print(f"Descargando portada localmente: {portada_url}")
+                    response = requests.get(portada_url, timeout=10)
+                    if response.status_code == 200:
+                        filename = f"portada_{uuid.uuid4().hex[:8]}.jpg"
+                        libro.portada.save(filename, ContentFile(response.content), save=True)
+                        print(f"✅ Portada guardada localmente: {filename}")
+                    else:
+                        print(f"❌ No se pudo descargar portada: {response.status_code}")
+                except Exception as e:
+                    print(f"❌ Error descargando portada: {e}")
             
             libro.save()
             print(f"✅ Libro importado exitosamente: {libro.titulo}")
