@@ -6,9 +6,11 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?style=for-the-badge&logo=postgresql)
 ![Render](https://img.shields.io/badge/Render-Cloud-46B3E3?style=for-the-badge&logo=render)
 
-## 🚀 Live Application
+## 🚀 Visit the deployed application
+<a href="https://biblioteca-django-5dbk.onrender.com" target="_blank" rel="noopener noreferrer">
+  https://biblioteca-django-5dbk.onrender.com
+</a>
 
-**Visit the deployed application:** [https://biblioteca-django-5dbk.onrender.com target="_blank"](https://biblioteca-django-5dbk.onrender.com)
 
 **Admin Demo Access:**
 - **Username:** `admin`
