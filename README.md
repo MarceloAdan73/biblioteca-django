@@ -8,7 +8,7 @@
 
 ## 🚀 Live Application
 
-**Visit the deployed application:** [https://biblioteca-django-5dbk.onrender.com](https://biblioteca-django-5dbk.onrender.com)
+**Visit the deployed application:** [https://biblioteca-django-5dbk.onrender.com target="_blank"](https://biblioteca-django-5dbk.onrender.com)
 
 **Admin Demo Access:**
 - **Username:** `admin`
